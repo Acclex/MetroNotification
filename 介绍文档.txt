@@ -1,0 +1,5 @@
+位置经纬度:http://api.map.baidu.com/lbsapi/getpoint/index.html 
+
+深圳地铁线路:http://jt.sz.bendibao.com/z/metro/linemap.shtml
+
+git clone https://github.com/Acclex/MetroRemind.git
