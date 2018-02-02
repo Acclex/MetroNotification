@@ -151,8 +151,8 @@ public class LineMapColorView extends View {
                 for (MarkObject object : markList) {
                     Bitmap location = object.getmBitmap();
                     canvas.drawBitmap(location, object.getX(), object.getY(), mPaint);
-                    int length = (int) (object.getName().length());
-                    canvas.drawText(object.getName(), object.getX() - length, object.getY() + object.getCurrentsize() * 2f, mPaint);
+                    int length = (int) (object.getName().length())+4;
+                    canvas.drawText(object.getLineid()+object.getName(), object.getX() - length, object.getY() + object.getCurrentsize() * 2f, mPaint);
                 }
             }
         } catch (Exception e) {

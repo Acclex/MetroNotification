@@ -19,6 +19,16 @@ public class LineInfo {
     public String rgbColor;
     public int colorid;
 
+    public String cityNo;//城市编码
+
+    public void setCityNo(String cityno){
+        this.cityNo = cityno;
+    }
+
+    public String getCityNo(){
+        return cityNo;
+    }
+
     private List<StationInfo> mStationInfoList = new ArrayList<StationInfo>();//地图站台信息
 
     public void setStationInfoList(List<StationInfo> mStationInfoList){

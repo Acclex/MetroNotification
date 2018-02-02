@@ -194,8 +194,8 @@ public class LineMapColor extends SurfaceView implements SurfaceHolder.Callback 
 						object.setX(x);
 						object.setY(y);
 						canvas.drawBitmap(location, matrix, mPaint);
-						int length = (int) (object.getName().length()*2);
-						canvas.drawText(object.getName(), x-length, y+object.getCurrentsize()*2f, mPaint);
+						int length = (int) ((object.getName().length()+object.getLineid())*2);
+						canvas.drawText(object.getLineid()+object.getName(), x-length, y+object.getCurrentsize()*2f, mPaint);
 					}
 
 				}

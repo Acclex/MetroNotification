@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.traffic.locationremind.R;
+import com.traffic.locationremind.manager.bean.CityInfo;
 import com.traffic.locationremind.manager.bean.ExitInfo;
 import com.traffic.locationremind.manager.bean.LineInfo;
 import com.traffic.locationremind.manager.bean.StationInfo;
@@ -96,6 +97,7 @@ public class ReadExcelDataUtil extends AsyncTask<Application, String, String> {
 			ExitInfo mExitInfo = null;
 			LineInfo mLineInfo = null;
 			StationInfo mStationInfo = null;
+			CityInfo mCityInfo = null;
 			for (int sheetIndex = 0; sheetIndex < wb.getNumberOfSheets(); sheetIndex++) {
 				HSSFSheet st = wb.getSheetAt(sheetIndex);
 				str = "第  " + (sheetIndex + 1) + "页"+st.getLastRowNum();
@@ -128,9 +130,13 @@ public class ReadExcelDataUtil extends AsyncTask<Application, String, String> {
 							if(mStationInfo == null)
 								mStationInfo = new StationInfo();
 							break;
-						default:
+						case 2:
 							if(mExitInfo == null)
 								mExitInfo = new ExitInfo();
+							break;
+						default:
+							if(mCityInfo == null)
+								mCityInfo = new CityInfo();
 							break;
 					}
 					for (short columnIndex = 0; columnIndex <= row.getLastCellNum(); columnIndex++) {
@@ -192,8 +198,11 @@ public class ReadExcelDataUtil extends AsyncTask<Application, String, String> {
 									case 2:
 										mLineInfo.setLineinfo(FooFileUtil.rightTrim(value));
 										break;
-									default:
+									case 3:
 										mLineInfo.setRGBCOOLOR(FooFileUtil.rightTrim(value));
+										break;
+									default:
+										mLineInfo.setCityNo(FooFileUtil.rightTrim(value));
 										break;
 								}
 								break;
@@ -233,11 +242,11 @@ public class ReadExcelDataUtil extends AsyncTask<Application, String, String> {
 										mStationInfo.setNextStation(FooFileUtil.rightTrim(value));
 										break;
 									default:
-										mStationInfo.setNextStation(FooFileUtil.rightTrim(value));
+										mStationInfo.setCityNo(FooFileUtil.rightTrim(value));
 										break;
 								}
 								break;
-							default:
+							case 2:
 								switch (columnIndex) {//地铁站台出口信息表
 									case 0:
 										mExitInfo.setCname(FooFileUtil.rightTrim(value));
@@ -245,8 +254,21 @@ public class ReadExcelDataUtil extends AsyncTask<Application, String, String> {
 									case 1:
 										mExitInfo.setExitname(FooFileUtil.rightTrim(value));
 										break;
-									default:
+									case 2:
 										mExitInfo.setAddr(FooFileUtil.rightTrim(value));
+										break;
+									default:
+										mExitInfo.setCityNo(FooFileUtil.rightTrim(value));
+										break;
+								}
+								break;
+							default:
+								switch (columnIndex) {//地铁站台出口信息表
+									case 0:
+										mCityInfo.setCityNo(FooFileUtil.rightTrim(value));
+										break;
+									default :
+										mCityInfo.setCityName(FooFileUtil.rightTrim(value));
 										break;
 								}
 								break;
@@ -263,9 +285,13 @@ public class ReadExcelDataUtil extends AsyncTask<Application, String, String> {
 								if(mStationInfo != null)
 									dbHelper.insetStationInfo(mStationInfo);
 								break;
-							default:
+							case 2:
 								if(mExitInfo != null)
 									dbHelper.insetExitInfo(mExitInfo);
+								break;
+							default:
+								if(mCityInfo != null)
+									dbHelper.insetCityInfo(mCityInfo);
 								break;
 						}
 					}

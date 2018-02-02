@@ -20,7 +20,29 @@
         android:layout_alignParentBottom="true"
         android:orientation="vertical" >
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
+            <Button
+                android:id="@+id/button_in"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/white"
+                android:text="@string/scal_btn"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/button_out"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/white"
+                android:text="@string/narrow_btn"
+                android:visibility="gone"/>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/text"
@@ -47,25 +69,17 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/white"
-                android:text="全局图"
+                android:text="@string/full_subway"
                 android:visibility="gone"/>
             <Button
-                android:id="@+id/button_in"
+                android:id="@+id/city_select"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/white"
-                android:text="放大"
+                android:text="@string/select_city"
                 android:visibility="gone"/>
 
-            <Button
-                android:id="@+id/button_out"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@color/white"
-                android:text="缩小"
-                android:visibility="gone"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -86,6 +100,7 @@
         android:padding="15dp"
         android:gravity="center"
         android:textColor="@color/black"
+        android:text="@string/loading"
         android:textSize="16dp" />
 
 </RelativeLayout>

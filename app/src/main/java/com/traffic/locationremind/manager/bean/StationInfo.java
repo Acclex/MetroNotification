@@ -30,6 +30,16 @@ public class StationInfo {
     public String transfer;
     public int colorId;
 
+    public String cityNo;//城市编码
+
+    public void setCityNo(String cityno){
+        this.cityNo = cityno;
+    }
+
+    public String getCityNo(){
+        return cityNo;
+    }
+
     public int getId() {
         return id;
     }

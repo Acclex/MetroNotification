@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import com.traffic.locationremind.R;
+import com.traffic.locationremind.manager.bean.StationInfo;
 
 public class MarkObject {
 
@@ -26,6 +27,8 @@ public class MarkObject {
 	private MarkClickListener listener;
 	private int lineid;
 	private int currentsize;
+
+	public StationInfo mStationInfo;
 	
 	public int getLineid() {
 		return lineid;

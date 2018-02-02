@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+
+import com.traffic.locationremind.manager.bean.CityInfo;
 import com.traffic.locationremind.manager.bean.ExitInfo;
 import com.traffic.locationremind.manager.bean.LineInfo;
 import com.traffic.locationremind.manager.bean.StationInfo;
@@ -41,12 +43,12 @@ public class DataHelper {
         db = null;
     }
 
-    public ArrayList<LineInfo> getLineList(String sortType, String asc) {
+    public ArrayList<LineInfo> getLineList(String cityNo,String sortType, String asc) {
         if (db == null) {
             return null;
         }
         ArrayList<LineInfo> allResourceList = new ArrayList<LineInfo>();
-        Cursor cursor = db.query(SqliteHelper.TB_LINE, null, null, null, null,
+        Cursor cursor = db.query(SqliteHelper.TB_LINE, null, CityInfo.CITYNO+" =?", new String[]{cityNo}, null,
                 null, sortType+" " + asc);
         allResourceList = convertCursorToLineList(cursor);
         if (allResourceList != null)
@@ -68,6 +70,7 @@ public class DataHelper {
             lineInfo.setLinename(cursor.getString(1));
             lineInfo.setLineinfo(cursor.getString(2));
             lineInfo.setRGBCOOLOR(cursor.getString(3));
+            lineInfo.setCityNo(cursor.getString(4));
             lineList.add(lineInfo);
         }
 
@@ -142,6 +145,7 @@ public class DataHelper {
             exitInfo.setCname(cursor.getString(0));
             exitInfo.setExitname(cursor.getString(1));
             exitInfo.setAddr(cursor.getString(2));
+            exitInfo.setCityNo(cursor.getString(3));
             exitInfoList.add(exitInfo);
         }
 
@@ -149,6 +153,65 @@ public class DataHelper {
         return exitInfoList;
 
     }
+
+    public ArrayList<CityInfo> convertCursorToCityInfoList(Cursor cursor) {
+        ArrayList<CityInfo> cityInfoList = new ArrayList<CityInfo>();
+        if (cursor == null)
+            return cityInfoList;
+        while (cursor.moveToNext()) {
+            CityInfo cityInfo = new CityInfo();
+            cityInfo.setCityNo(cursor.getString(0));
+            cityInfo.setCityName(cursor.getString(1));
+            cityInfoList.add(cityInfo);
+        }
+
+        Log.e(TAG, "convertCursorToList");
+        return cityInfoList;
+
+    }
+
+    public boolean insetCityInfo(CityInfo cityInfo) {
+        ContentValues values = new ContentValues();
+
+        values.put(CityInfo.CITYNO, cityInfo.getCityNo());
+        values.put(CityInfo.CITYNAME, cityInfo.getCityName());
+        long rowid = db.insert(SqliteHelper.TB_CITY_INFO, null, values);
+        Log.d(TAG, "insetCityInfo rowid = " + rowid);
+        if (rowid > 0)
+            return true;
+        return false;
+    }
+
+    public List<CityInfo> QueryCityByCityNo(String cityNo) {
+
+        List<CityInfo> cityList = new ArrayList<CityInfo>();
+        Cursor cursor = db.query(SqliteHelper.TB_CITY_INFO, null, CityInfo.CITYNO+" =?"
+                , new String[]{cityNo}, null, null,
+                null);
+
+        Log.e(TAG, "QueryCityByCityNo");
+
+        cityList = convertCursorToCityInfoList(cursor);
+        if (cursor != null)
+            cursor.close();
+        return cityList;
+    }
+
+    public List<CityInfo> getAllCityInfo() {
+
+        List<CityInfo> cityList = new ArrayList<CityInfo>();
+        Cursor cursor = db.query(SqliteHelper.TB_CITY_INFO, null, null
+                , null, null, null,
+                null);
+
+        Log.e(TAG, "QueryCityByCityNo");
+
+        cityList = convertCursorToCityInfoList(cursor);
+        if (cursor != null)
+            cursor.close();
+        return cityList;
+    }
+
 
     public int getCount(String tbName) {
         Cursor cursor = db.query(tbName, null, null, null, null,
@@ -168,6 +231,7 @@ public class DataHelper {
         values.put(LineInfo.LINENAME, lineInfo.getLinename());
         values.put(LineInfo.LINEINFO, lineInfo.getLineinfo());
         values.put(LineInfo.RGBCOOLOR,lineInfo.getRGBCOOLOR());
+        values.put(CityInfo.CITYNO,lineInfo.getCityNo());
         long rowid = db.insert(SqliteHelper.TB_LINE, null, values);
         Log.d(TAG, "insetLineInfo rowid = " + rowid);
         if (rowid > 0)
@@ -219,6 +283,7 @@ public class DataHelper {
         values.put(StationInfo.NEXTSTATION, stationInfo.getNextStation());
         values.put(StationInfo.STATIONINFO, stationInfo.getStationInfo());
         values.put(StationInfo.TRANSFER, stationInfo.getTransfer());
+        values.put(CityInfo.CITYNO,stationInfo.getCityNo());
         long rowid = db.insert(SqliteHelper.TB_STATION, null, values);
         Log.d(TAG, "insetStationInfo rowid = " + rowid);
         if (rowid > 0)
@@ -226,11 +291,11 @@ public class DataHelper {
         return false;
     }
 
-    public List<StationInfo> QueryByStationLineNo(int lineNo) {
+    public List<StationInfo> QueryByStationLineNo(int lineNo,String cityNo) {
 
         List<StationInfo> StationInfoList = new ArrayList<StationInfo>();
 
-        Cursor cursor = db.query(SqliteHelper.TB_STATION, null, StationInfo.LINEID+" =?", new String[]{""+lineNo}, null,
+        Cursor cursor = db.query(SqliteHelper.TB_STATION, null, StationInfo.LINEID+" =?"+" and "+CityInfo.CITYNO+" = ?", new String[]{""+lineNo,cityNo}, null,
                 null, StationInfo.PM+" ASC");
 
         Log.e(TAG, "QueryByStationLineNo");
@@ -262,6 +327,7 @@ public class DataHelper {
         values.put(ExitInfo.CNAME, exitInfo.getCname());
         values.put(ExitInfo.EXITNAME, exitInfo.getExitname());
         values.put(ExitInfo.ADDR, exitInfo.getAddr());
+        values.put(CityInfo.CITYNO,exitInfo.getCityNo());
         long rowid = db.insert(SqliteHelper.TB_EXIT_INFO, null, values);
         Log.d(TAG, "insetExitInfo rowid = " + rowid);
         if (rowid > 0)
@@ -269,12 +335,12 @@ public class DataHelper {
         return false;
     }
 
-    public List<ExitInfo> QueryByExitInfoCname(String Cname) {
+    public List<ExitInfo> QueryByExitInfoCname(String Cname,String cityNo) {
 
         List<ExitInfo> ExitInfoList = new ArrayList<ExitInfo>();
-        Cursor cursor = db.query(SqliteHelper.TB_EXIT_INFO, null, ExitInfo.CNAME
-                , new String[]{Cname}, null, null,
-                null);
+        Cursor cursor = db.query(SqliteHelper.TB_EXIT_INFO, null, ExitInfo.CNAME+" = ?"+" and "+CityInfo.CITYNO+" =?"
+                , new String[]{Cname,cityNo}, null, null,
+                ExitInfo.CNAME);
 
         Log.e(TAG, "QueryByExitInfoCname");
 
@@ -284,13 +350,13 @@ public class DataHelper {
         return ExitInfoList;
     }
 
-    public List<ExitInfo> QueryByExitInfoCnameAndExitName(String stationName, String exitName) {
+    public List<ExitInfo> QueryByExitInfoCnameAndExitName(String stationName, String exitName,String cityNo) {
 
         List<ExitInfo> ExitInfoList = new ArrayList<ExitInfo>();
-        String selection = ExitInfo.CNAME + "=? and " + ExitInfo.EXITNAME + "=?";
+        String selection = ExitInfo.CNAME + "=? and " + ExitInfo.EXITNAME + "=?"+" and "+CityInfo.CITYNO+" =?";
         Cursor cursor = db.query(SqliteHelper.TB_EXIT_INFO, null, selection
-                , new String[]{stationName, exitName}, null, null,
-                null);
+                , new String[]{stationName, exitName,cityNo}, null, null,
+                ExitInfo.CNAME);
 
         Log.e(TAG, "QueryByExitInfoCnameAndExitName");
 
