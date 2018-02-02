@@ -1,19 +1,12 @@
-package com.traffic.locationremind.baidu.location.demo;
+package com.traffic.locationremind.baidu.location.activity;
 
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
-import com.traffic.locationremind.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +17,7 @@ import java.util.List;
  * @author baidu
  *
  */
-public class MainActivity extends Activity {
+public class CommonActivity extends Activity {
     private final int SDK_PERMISSION_REQUEST = 127;
     private ListView FunctionList;
     private String permissionInfo;
@@ -32,11 +25,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.function_list);
+        /*setContentView(R.layout.function_list);
         FunctionList = (ListView) findViewById(R.id.functionList);
         FunctionList
                 .setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1, getData()));
-
+*/
         // after andrioid m,must request Permiision on runtime
         getPersimmions();
     }
@@ -100,7 +93,7 @@ public class MainActivity extends Activity {
     protected void onStart() {
         // TODO Auto-generated method stub
         super.onStart();
-        FunctionList.setOnItemClickListener(new OnItemClickListener() {
+        /*FunctionList.setOnItemClickListener(new OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
@@ -129,18 +122,18 @@ public class MainActivity extends Activity {
                         TargetClass = IsHotWifiActivity.class;
                         break;
                     case 7:
-                        TargetClass = QuestActivity.class;
+                        TargetClass = SubWayLineActivity.class;
                         break;
                     default:
                         break;
                 }
                 if (TargetClass != null) {
-                    Intent intent = new Intent(MainActivity.this, TargetClass);
+                    Intent intent = new Intent(CommonActivity.this, TargetClass);
                     intent.putExtra("from", 0);
                     startActivity(intent);
                 }
             }
-        });
+        });*/
     }
 
     private List<String> getData() {

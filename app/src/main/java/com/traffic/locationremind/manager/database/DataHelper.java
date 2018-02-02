@@ -21,6 +21,14 @@ public class DataHelper {
 
     private SQLiteDatabase db;
     private SqliteHelper dbHelper;
+    private static DataHelper mDataHelper;
+
+    public static DataHelper getInstance(Context context){
+        if(mDataHelper == null){
+            mDataHelper = new DataHelper(context);
+        }
+        return mDataHelper;
+    }
 
     public DataHelper(Context context) {
         dbHelper = new SqliteHelper(context, DB_NAME, null, DB_VERSION);
@@ -33,19 +41,20 @@ public class DataHelper {
         db = null;
     }
 
-    public ArrayList<LineInfo> getList(String sortType, String asc) {
+    public ArrayList<LineInfo> getLineList(String sortType, String asc) {
         if (db == null) {
             return null;
         }
         ArrayList<LineInfo> allResourceList = new ArrayList<LineInfo>();
         Cursor cursor = db.query(SqliteHelper.TB_LINE, null, null, null, null,
-                null, sortType + asc);
+                null, sortType+" " + asc);
         allResourceList = convertCursorToLineList(cursor);
         if (allResourceList != null)
             Log.d(TAG, TAG + " length " + allResourceList.size()
                     + " cursorcount = " + cursor.getCount() + " orderby = "
                     + sortType + asc);
-        cursor.close();
+        if(cursor != null)
+            cursor.close();
         return allResourceList;
     }
 
@@ -55,9 +64,10 @@ public class DataHelper {
             return lineList;
         while (cursor.moveToNext()) {
             LineInfo lineInfo = new LineInfo();
-            lineInfo.setLineid(cursor.getString(0));
+            lineInfo.setLineid(cursor.getInt(0));
             lineInfo.setLinename(cursor.getString(1));
             lineInfo.setLineinfo(cursor.getString(2));
+            lineInfo.setRGBCOOLOR(cursor.getString(3));
             lineList.add(lineInfo);
         }
 
@@ -88,13 +98,17 @@ public class DataHelper {
             return stationInfoList;
         while (cursor.moveToNext()) {
             StationInfo stationInfo = new StationInfo();
-            stationInfo.setLineid(cursor.getString(0));
-            stationInfo.setPm(cursor.getString(1));
+            stationInfo.setLineid(cursor.getInt(0));
+            stationInfo.setPm(cursor.getInt(1));
             stationInfo.setCname(cursor.getString(2));
             stationInfo.setPname(cursor.getString(3));
             stationInfo.setAname(cursor.getString(4));
-            stationInfo.setLot(cursor.getDouble(5));
-            stationInfo.setLat(cursor.getDouble(6));
+            stationInfo.setLot(cursor.getString(5));
+            stationInfo.setLat(cursor.getString(6));
+            stationInfo.setPreStation(cursor.getString(7));
+            stationInfo.setNextStation(cursor.getString(8));
+            stationInfo.setStationInfo(cursor.getString(9));
+            stationInfo.setTransfer(cursor.getString(10));
             stationInfoList.add(stationInfo);
         }
 
@@ -151,10 +165,11 @@ public class DataHelper {
         ContentValues values = new ContentValues();
 
         values.put(LineInfo.LINEID, lineInfo.getLineid());
-        values.put(LineInfo.LINENAME, lineInfo.getLineinfo());
+        values.put(LineInfo.LINENAME, lineInfo.getLinename());
         values.put(LineInfo.LINEINFO, lineInfo.getLineinfo());
+        values.put(LineInfo.RGBCOOLOR,lineInfo.getRGBCOOLOR());
         long rowid = db.insert(SqliteHelper.TB_LINE, null, values);
-        Log.d(TAG, "inset rowid = " + rowid);
+        Log.d(TAG, "insetLineInfo rowid = " + rowid);
         if (rowid > 0)
             return true;
         return false;
@@ -193,7 +208,6 @@ public class DataHelper {
 
     public boolean insetStationInfo(StationInfo stationInfo) {
         ContentValues values = new ContentValues();
-
         values.put(StationInfo.LINEID, stationInfo.getLineid());
         values.put(StationInfo.PM, stationInfo.getPm());
         values.put(StationInfo.CNAME, stationInfo.getCname());
@@ -201,19 +215,23 @@ public class DataHelper {
         values.put(StationInfo.ANAME, stationInfo.getAname());
         values.put(StationInfo.LOT, stationInfo.getLot());
         values.put(StationInfo.LAT, stationInfo.getLat());
+        values.put(StationInfo.PRESTATION, stationInfo.getPreStation());
+        values.put(StationInfo.NEXTSTATION, stationInfo.getNextStation());
+        values.put(StationInfo.STATIONINFO, stationInfo.getStationInfo());
+        values.put(StationInfo.TRANSFER, stationInfo.getTransfer());
         long rowid = db.insert(SqliteHelper.TB_STATION, null, values);
-        Log.d(TAG, "inset rowid = " + rowid);
+        Log.d(TAG, "insetStationInfo rowid = " + rowid);
         if (rowid > 0)
             return true;
         return false;
     }
 
-    public List<StationInfo> QueryByStationLineNo(String lineNo) {
+    public List<StationInfo> QueryByStationLineNo(int lineNo) {
 
         List<StationInfo> StationInfoList = new ArrayList<StationInfo>();
-        Cursor cursor = db.query(SqliteHelper.TB_STATION, null, StationInfo.LINEID
-                , new String[]{lineNo}, null, null,
-                null);
+
+        Cursor cursor = db.query(SqliteHelper.TB_STATION, null, StationInfo.LINEID+" =?", new String[]{""+lineNo}, null,
+                null, StationInfo.PM+" ASC");
 
         Log.e(TAG, "QueryByStationLineNo");
 
@@ -245,7 +263,7 @@ public class DataHelper {
         values.put(ExitInfo.EXITNAME, exitInfo.getExitname());
         values.put(ExitInfo.ADDR, exitInfo.getAddr());
         long rowid = db.insert(SqliteHelper.TB_EXIT_INFO, null, values);
-        Log.d(TAG, "inset rowid = " + rowid);
+        Log.d(TAG, "insetExitInfo rowid = " + rowid);
         if (rowid > 0)
             return true;
         return false;

@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
 
     <application
-        android:name="com.traffic.locationremind.baidu.location.demo.LocationApplication"
+        android:name="com.traffic.locationremind.baidu.location.activity.LocationApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -37,14 +37,24 @@
             android:value="nZvrMkzWGi2M7KovnRiIUhatA5UMTFQi" /> <!-- http://lbsyun.baidu.com/apiconsole/key -->
 
 
-        <activity android:name="com.traffic.locationremind.baidu.location.demo.MainActivity">
+       <!-- <activity android:name="com.traffic.locationremind.baidu.location.activity.CommonActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>-->
+        <activity android:name="com.traffic.locationremind.baidu.location.activity.MainViewActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.traffic.locationremind.baidu.location.demo.LocationActivity"></activity>
+
+        <activity android:name="com.traffic.locationremind.baidu.location.activity.LocationActivity">
+
+        </activity>
     </application>
 
 </manifest>

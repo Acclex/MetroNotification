@@ -1,6 +1,5 @@
-package com.traffic.locationremind.baidu.location.demo;
+package com.traffic.locationremind.baidu.location.activity;
 
-import android.app.Activity;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -32,7 +31,7 @@ import java.util.Locale;
  * @author baidu
  *
  */
-public class LocationActivity extends Activity {
+public class LocationActivity extends CommonActivity {
     private LocationService locationService;
     private TextView LocationResult;
     private Button startLocation;

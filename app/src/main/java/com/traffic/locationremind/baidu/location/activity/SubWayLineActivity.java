@@ -1,15 +1,15 @@
-package com.traffic.locationremind.baidu.location.demo;
+package com.traffic.locationremind.baidu.location.activity;
 
-
-import com.traffic.locationremind.R;
 
 import android.app.Activity;
 import android.os.Bundle;
 
+import com.traffic.locationremind.R;
+
 /**
  * 常见问题
  */
-public class QuestActivity extends Activity {
+public class SubWayLineActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

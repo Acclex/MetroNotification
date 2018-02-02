@@ -1,21 +1,59 @@
 package com.traffic.locationremind.manager.bean;
 
 
+import android.graphics.Color;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class LineInfo {
     public static String ID = "id";
     public static String LINEID = "lineid";
     public static String LINENAME = "linename";
     public static String LINEINFO = "lineinfo";
+    public static String RGBCOOLOR = "rgbcolor";
 
-    public String lineid;//线路id
+    public int lineid;//线路id
     public String linename;//线路名
     public String lineinfo;//线路信息
+    public String rgbColor;
+    public int colorid;
 
-    public String getLineid() {
+    private List<StationInfo> mStationInfoList = new ArrayList<StationInfo>();//地图站台信息
+
+    public void setStationInfoList(List<StationInfo> mStationInfoList){
+        if(this.mStationInfoList != null){
+            this.mStationInfoList.clear();
+        }
+        this.mStationInfoList = mStationInfoList;
+    }
+
+    public void setRGBCOOLOR(String rgbColor){
+        this.rgbColor = rgbColor;
+        String color[]=rgbColor.split(",");
+        int cc[]={0,0,0};
+        //Log.d("ttxx","setRGBCOOLOR rgbColor = "+rgbColor);
+        for(int n = 0;n<color.length;n++){
+            String str2 = color[n].replaceAll(" ", "");
+            //Log.d("ttxx","setRGBCOOLOR color[n] = "+color[n]);
+            cc[n]= Integer.parseInt(str2.equals("")?"0":color[n]);
+        }
+        colorid = Color.rgb(cc[0],cc[1],cc[2]);
+    }
+
+    public String getRGBCOOLOR(){
+        return rgbColor;
+    }
+
+    public List<StationInfo>  getStationInfoList(){
+        return mStationInfoList;
+    }
+
+    public int getLineid() {
         return lineid;
     }
 
-    public void setLineid(String lineid) {
+    public void setLineid(int lineid) {
         this.lineid = lineid;
     }
 

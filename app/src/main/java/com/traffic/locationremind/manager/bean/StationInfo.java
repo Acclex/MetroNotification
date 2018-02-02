@@ -11,15 +11,24 @@ public class StationInfo {
     public static String ANAME = "aname";
     public static String LOT = "lot";
     public static String LAT = "lat";
+    public static String PRESTATION = "preStation";
+    public static String NEXTSTATION = "nextStation";
+    public static String STATIONINFO = "stationinfo";
+    public static String TRANSFER = "transfer";
 
     public int id;
-    public String lineid;//线路id
-    public String pm;
+    public int lineid;//线路id
+    public int pm;
     public String cname;//站台名
     public String pname;//站台英文名
     public String aname;//站台名简称
-    public double lot;//进度
-    public double lat;//纬度
+    public String stationinfo;//站台时间
+    public String lot;//进度
+    public String lat;//纬度
+    public String preStation;//下一站
+    public String nextStation;//上一站
+    public String transfer;
+    public int colorId;
 
     public int getId() {
         return id;
@@ -29,19 +38,19 @@ public class StationInfo {
         this.id = id;
     }
 
-    public String getLineid() {
+    public int getLineid() {
         return lineid;
     }
 
-    public void setLineid(String lineid) {
+    public void setLineid(int lineid) {
         this.lineid = lineid;
     }
 
-    public String getPm() {
+    public int getPm() {
         return pm;
     }
 
-    public void setPm(String pm) {
+    public void setPm(int pm) {
         this.pm = pm;
     }
 
@@ -69,19 +78,52 @@ public class StationInfo {
         this.aname = aname;
     }
 
-    public double getLot() {
+    public String getLot() {
         return lot;
     }
 
-    public void setLot(double lot) {
+    public void setLot(String lot) {
         this.lot = lot;
     }
 
-    public double getLat() {
+    public String getLat() {
         return lat;
     }
 
-    public void setLat(double lat) {
+    public void setLat(String lat) {
         this.lat = lat;
     }
+
+    public void setPreStation(String preStation){
+        this.preStation = preStation;
+    }
+
+    public String getPreStation(){
+        return preStation;
+    }
+
+    public void setNextStation(String nextStation){
+        this.nextStation = nextStation;
+    }
+
+    public String getNextStation(){
+        return nextStation;
+    }
+
+    public void setStationInfo(String stationinfo){
+        this.stationinfo = stationinfo;
+    }
+
+    public String getStationInfo(){
+        return stationinfo;
+    }
+
+    public void setTransfer(String transfer){
+        this.transfer = transfer;
+    }
+
+    public String getTransfer(){
+        return transfer;
+    }
+
 }

@@ -26,20 +26,30 @@ public class SqliteHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TB_LINE + "("
-                + LineInfo.LINEID + " varchar," + LineInfo.LINENAME
-                + " varchar," + LineInfo.LINEINFO + " varchar" + ")");
-
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + TB_STATION + "("
-                + StationInfo.ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + StationInfo.LINEID + " varchar," + StationInfo.PM
-                + " varchar," + StationInfo.CNAME + " varchar,"
-                + StationInfo.PNAME + " varchar," + StationInfo.ANAME + " varchar,"
-                + StationInfo.LOT + " double," + StationInfo.LAT + " double"
+                + LineInfo.LINEID + " int,"
+                + LineInfo.LINENAME + " varchar,"
+                + LineInfo.LINEINFO + " varchar,"
+                + LineInfo.RGBCOOLOR + " varchar"
                 + ")");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TB_STATION + "("
-                + ExitInfo.CNAME + " varchar," + ExitInfo.EXITNAME
-                + " varchar," + ExitInfo.ADDR + " varchar"
+                + StationInfo.LINEID + " int,"
+                + StationInfo.PM + " int,"
+                + StationInfo.CNAME + " varchar,"
+                + StationInfo.PNAME + " varchar,"
+                + StationInfo.ANAME + " varchar,"
+                + StationInfo.LOT + " varchar,"
+                + StationInfo.LAT + " varchar,"
+                + StationInfo.PRESTATION + " varchar,"
+                + StationInfo.NEXTSTATION + " varchar,"
+                + StationInfo.STATIONINFO + " varchar,"
+                + StationInfo.TRANSFER + " varchar"
+                + ")");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TB_EXIT_INFO + "("
+                + ExitInfo.CNAME + " varchar,"
+                + ExitInfo.EXITNAME + " varchar,"
+                + ExitInfo.ADDR + " varchar"
                 + ")");
 
         Log.e("Database", "onCreate create table " + TB_LINE + " " + TB_STATION + " " + TB_STATION);

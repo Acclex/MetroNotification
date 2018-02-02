@@ -7,4 +7,6 @@
     <dimen name="main_title_size">18sp</dimen>
     <dimen name="second_title_size">16sp</dimen>
     <dimen name="desc_title_size">12sp</dimen>
+    <dimen name="text_size">10dp</dimen>
+    <dimen name="map_height">150dp</dimen>
 </resources>
