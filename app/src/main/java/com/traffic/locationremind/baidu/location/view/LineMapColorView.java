@@ -24,7 +24,7 @@ public class LineMapColorView extends View {
     public static final int MAXSCALE = 3;
 
     private static final long DOUBLE_CLICK_TIME_SPACE = 300;
-
+    public final static int ROWCOLORHEIGHT = 80;
     private float windowWidth, windowHeight;
 
     private Bitmap mBitmap;
@@ -59,6 +59,8 @@ public class LineMapColorView extends View {
 
         // 获取屏幕的宽和高
         windowWidth = getResources().getDisplayMetrics().widthPixels;
+        MarkObject.rectSizewidth = (int)windowWidth/ROWMAXCOUNT/3;
+        MarkObject.rectSizeHeight = (int)MarkObject.rectSizewidth/2;
         windowHeight = getResources().getDisplayMetrics().heightPixels;
         mPaint = new Paint();
     }

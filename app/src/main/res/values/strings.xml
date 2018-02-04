@@ -39,14 +39,14 @@
     <string name="loading">玩命加载...</string>
     <string name="subway">地铁</string>
     <string name="subway_tail">号线</string>
-    <string name="select_city">城市</string>
+    <string name="select_city">切换城市</string>
     <string name="full_subway">全局图</string>
     <string name="scal_btn">放大</string>
     <string name="narrow_btn">缩小</string>
     <string name="cancle_btn">取消</string>
     <string name="save_btn">保存</string>
-    <string name="start">起点</string>
-    <string name="end">终点</string>
+    <string name="start">设为起点</string>
+    <string name="end">设为终点</string>
     <string name="transfer_hint">你可以在此处换乘:</string>
     <string name="station_exit">站台出口:</string>
 </resources>

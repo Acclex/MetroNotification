@@ -97,6 +97,8 @@ public class LineMapView extends View {
         this.context = context;
         // 获取屏幕的宽和高
         windowWidth = getResources().getDisplayMetrics().widthPixels;
+        MarkObject.size = (int)windowWidth/ROWMAXCOUNT/3;
+        MarkObject.ROWHEIGHT = (int)MarkObject.size*4;
         windowHeight = getResources().getDisplayMetrics().heightPixels
                 - getStatusBarHeight();
         //pointDistance = windowWidth / ROWMAXCOUNT;
@@ -344,6 +346,7 @@ public class LineMapView extends View {
                                 - mBitmap.getHeight() * mCurrentScale / 2
                                 + mBitmap.getHeight() * object.getMapY()
                                 * mCurrentScale;
+                       // y=y*2;
                         object.setX(x);
                         object.setY(y);
                         int curow = n / (LineMapView.ROWMAXCOUNT) + 1;
@@ -427,6 +430,7 @@ public class LineMapView extends View {
                 } else if (mStatus == Status.ZOOM) {
                     zoomAction(event);
                 }
+                postInvalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 if (mStatus != Status.ZOOM) {

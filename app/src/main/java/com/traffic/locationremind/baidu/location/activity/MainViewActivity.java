@@ -52,6 +52,7 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 	private Button city_select;
 	private TextView currentLineInfoText;
 	private TextView hintText;
+	private View middle_line;
 	private int currentIndex = 1;
 	private DataHelper mDataHelper;//数据库
 	private List<CityInfo> cityInfoList = new ArrayList<CityInfo>();//所有城市信息
@@ -59,6 +60,7 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 	private List<StationInfo> mStationInfoList = new ArrayList<StationInfo>();//地图站台信息
 	private CityInfo currentCityNo = null;
 	private initDataThread minitDataThread;
+	private int extraRow = 1;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -139,6 +141,7 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 		city_select = (Button) findViewById(R.id.city_select);
 		gif = (GifView) findViewById(R.id.gif);
 		hintText = (TextView) findViewById(R.id.hint);
+		//middle_line = (View) findViewById(R.id.middle_line);
 		///-----------------
 
 		mDataHelper = DataHelper.getInstance(this);
@@ -233,6 +236,7 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 		lineMap.setVisibility(visible);
 		currentLineInfoText.setVisibility(visible);
 		city_select.setVisibility(visible);
+		//middle_line.setVisibility(visible);
 	}
 
 	private void initData(){
@@ -278,14 +282,16 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 	}
 
 	private void initLineColorMap(){
-		int colorRow = mLineInfoList.size()/ LineMapColor.ROWMAXCOUNT+1;
-		Bitmap bitmap1 = Bitmap.createBitmap((int) lineMap.getViewWidth(), MarkObject.ROWCOLORHEIGHT*colorRow,
+		int colorRow = mLineInfoList.size()/ LineMapColorView.ROWMAXCOUNT+1;
+
+		int height = MarkObject.rectSizeHeight*colorRow*3;
+		Bitmap bitmap1 = Bitmap.createBitmap((int) lineMap.getViewWidth(), height,
                 Bitmap.Config.ARGB_8888);
 		bitmap1.eraseColor(this.getResources().getColor(R.color.white));//填充颜色
 		lineMap.setBitmap(bitmap1);
 		LinearLayout.LayoutParams linearParams = (LinearLayout.LayoutParams) lineMap.getLayoutParams();
         // 取控件aaa当前的布局参数
-        linearParams.height = MarkObject.ROWCOLORHEIGHT*colorRow;
+        linearParams.height = height;
         lineMap.setLayoutParams(linearParams); // 使设置好的布局参数应用到控件
 		float disx = lineMap.getViewWidth()/LineMapColorView.ROWMAXCOUNT;
 		//Log.d("zxc", "disx = "+disx+this.getResources().getColor(lineColor[0]));
@@ -339,19 +345,19 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 				break;
 			}
 		}
-		int countRow = mStationInfoList.size()/LineMap.ROWMAXCOUNT+1;
+		int countRow = mStationInfoList.size()/LineMapView.ROWMAXCOUNT+extraRow;
 		/*int countRow = mStationInfoList.size()/LineMap.ROWMAXCOUNT+1;
 		Bitmap bitmap = Bitmap.createBitmap((int) sceneMap.getViewWidth(), MarkObject.ROWHEIGHT*countRow,  
                 Bitmap.Config.ARGB_8888);
 		bitmap.eraseColor(this.getResources().getColor(R.color.white));//填充颜色  
 		sceneMap.setBitmap(bitmap);*/
-		float initX = 1f/LineMap.ROWMAXCOUNT/2f;
+		float initX = 1f/LineMapView.ROWMAXCOUNT/2f;
 		float initY = 1f/countRow/2;
 		
 		for(int n=0;n<mStationInfoList.size();n++){
 			MarkObject markObject = new MarkObject();
-			float row = n/(LineMap.ROWMAXCOUNT)+1;
-			float cloume = n%(LineMap.ROWMAXCOUNT);
+			float row = n/(LineMapView.ROWMAXCOUNT)+extraRow;
+			float cloume = n%(LineMapView.ROWMAXCOUNT);
 			
 			float x = cloume/(LineMap.ROWMAXCOUNT)+initX;
 			float y = row/countRow-initY;
@@ -454,8 +460,10 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 							notiDialog.dismiss();
 							break;
 						case R.id.start:
+							notiDialog.dismiss();
 							break;
 						case R.id.end:
+							notiDialog.dismiss();
 							break;
 					}
 

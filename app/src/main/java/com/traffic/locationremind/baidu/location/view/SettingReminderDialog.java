@@ -53,8 +53,8 @@ public class SettingReminderDialog extends Dialog implements OnClickListener{
         TextView exit_info = (TextView) findViewById(R.id.exit_info);
         Button cancel_action = (Button) findViewById(R.id.cancel_action);
         Button save_action = (Button) findViewById(R.id.save_action);
-        RadioButton start = (RadioButton) findViewById(R.id.start);
-        RadioButton end = (RadioButton) findViewById(R.id.end);
+        Button start = (Button) findViewById(R.id.start);
+        Button end = (Button) findViewById(R.id.end);
 
         title.setText(convertString());
         transfer.setText(transferInfo);

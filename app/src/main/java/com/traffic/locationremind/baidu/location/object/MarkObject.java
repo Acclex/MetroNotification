@@ -18,11 +18,11 @@ public class MarkObject {
 	private float y;
 	private String name;
 	private int colorId;
-	public final static int size = 30;
-	public final static int rectSizeHeight = 30;
-	public final static int rectSizewidth = 50;
-	public final static int ROWHEIGHT = 100;
-	public final static int ROWCOLORHEIGHT = 80;
+	public static int size = 30;
+	public static int rectSizeHeight = 30;
+	public static int rectSizewidth = 50;
+	public static int ROWHEIGHT = 100;
+
 	public final static int DIFF = 5;
 	private MarkClickListener listener;
 	private int lineid;
