@@ -9,4 +9,6 @@
     <dimen name="desc_title_size">12sp</dimen>
     <dimen name="text_size">10dp</dimen>
     <dimen name="map_height">150dp</dimen>
+    <dimen name="btn_size">35dp</dimen>
+    <dimen name="magin_left">10dp</dimen>
 </resources>

@@ -3,10 +3,12 @@ package com.traffic.locationremind.baidu.location.activity;
 
 import android.app.Application;
 import android.app.Service;
+import android.content.Intent;
 import android.os.Vibrator;
 
 import com.baidu.mapapi.SDKInitializer;
 import com.traffic.locationremind.baidu.location.service.LocationService;
+import com.traffic.locationremind.baidu.location.service.RemonderLocationService;
 import com.traffic.locationremind.common.util.ReadExcelDataUtil;
 import com.traffic.locationremind.manager.database.DataHelper;
 
@@ -36,6 +38,8 @@ public class LocationApplication extends Application {
         mReadExcelDataUtil = ReadExcelDataUtil.getInstance();
         mReadExcelDataUtil.execute(this);
         //}
+        Intent startIntent = new Intent(this, RemonderLocationService.class);
+        startService(startIntent);
 
     }
 
@@ -46,6 +50,8 @@ public class LocationApplication extends Application {
     public void onDestory(){
         if(mDataHelper != null){
             mDataHelper.Close();
+            Intent stopIntent = new Intent(this, RemonderLocationService.class);
+            stopService(stopIntent);
         }
     }
 }

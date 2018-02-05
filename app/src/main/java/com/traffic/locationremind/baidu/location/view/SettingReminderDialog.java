@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.traffic.locationremind.R;
@@ -51,8 +50,8 @@ public class SettingReminderDialog extends Dialog implements OnClickListener{
         TextView title = (TextView) findViewById(R.id.title);
         TextView transfer = (TextView) findViewById(R.id.transfer);
         TextView exit_info = (TextView) findViewById(R.id.exit_info);
-        Button cancel_action = (Button) findViewById(R.id.cancel_action);
-        Button save_action = (Button) findViewById(R.id.save_action);
+       // Button cancel_action = (Button) findViewById(R.id.cancel_action);
+       // Button save_action = (Button) findViewById(R.id.save_action);
         Button start = (Button) findViewById(R.id.start);
         Button end = (Button) findViewById(R.id.end);
 
@@ -60,8 +59,8 @@ public class SettingReminderDialog extends Dialog implements OnClickListener{
         transfer.setText(transferInfo);
         exit_info.setText(exitInfo);
 
-        cancel_action.setOnClickListener(this);
-        save_action.setOnClickListener(this);
+       // cancel_action.setOnClickListener(this);
+       // save_action.setOnClickListener(this);
 
         start.setOnClickListener(this);
         end.setOnClickListener(this);

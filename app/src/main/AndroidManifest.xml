@@ -26,32 +26,32 @@
         android:theme="@style/AppTheme">
 
         <!-- 声明百度定位服务组件 -->
-        <service android:name="com.baidu.location.f"
+<!--        <service android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote" />
-
+            android:process=":remote" />-->
+        <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote"
+                 android:permission="android.permission.BAIDU_LOCATION_SERVICE">
+        </service>
         <!-- AK鉴权 -->
         <!-- meta-data需要写在application中 -->
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="nZvrMkzWGi2M7KovnRiIUhatA5UMTFQi" /> <!-- http://lbsyun.baidu.com/apiconsole/key -->
 
-
-       <!-- <activity android:name="com.traffic.locationremind.baidu.location.activity.CommonActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>-->
-        <activity android:name="com.traffic.locationremind.baidu.location.activity.MainViewActivity">
+        <activity android:name="com.traffic.locationremind.baidu.location.activity.MainViewActivity"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.traffic.locationremind.baidu.location.activity.NotifyActivity"
+                  android:screenOrientation="portrait">
 
+        </activity>
+
+        <service android:name="com.traffic.locationremind.baidu.location.service.RemonderLocationService"/>
         <activity android:name="com.traffic.locationremind.baidu.location.activity.LocationActivity">
 
         </activity>

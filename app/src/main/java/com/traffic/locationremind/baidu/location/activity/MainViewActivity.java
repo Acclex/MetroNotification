@@ -1,13 +1,18 @@
 package com.traffic.locationremind.baidu.location.activity;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,12 +22,14 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.traffic.locationremind.R;
 import com.traffic.locationremind.baidu.location.object.MarkObject;
 import com.traffic.locationremind.baidu.location.object.MarkObject.MarkClickListener;
+import com.traffic.locationremind.baidu.location.service.RemonderLocationService;
 import com.traffic.locationremind.baidu.location.view.GifView;
 import com.traffic.locationremind.baidu.location.view.LineMap;
 import com.traffic.locationremind.baidu.location.view.LineMapColor;
@@ -43,13 +50,17 @@ import java.util.List;
 
 public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWriteFinishListener{
 
+	private final static  String TAG = "MainViewActivity";
 	private LineMapView sceneMap;
 	private LineMapColorView lineMap;
 	private GifView gif;
-	private Button scaleMorebtn;
-	private Button scaleLessbtn;
+	private ImageView scaleMorebtn;
+	private ImageView scaleLessbtn;
+	private ImageView button_location;
+	private LinearLayout btnLinearLayout;
 	private Button screenbtn;
 	private Button city_select;
+	private Button start_location_reminder;
 	private TextView currentLineInfoText;
 	private TextView hintText;
 	private View middle_line;
@@ -61,6 +72,9 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 	private CityInfo currentCityNo = null;
 	private initDataThread minitDataThread;
 	private int extraRow = 1;
+
+	private RemonderLocationService.UpdateBinder mUpdateBinder;
+	private RemonderLocationService mRemonderLocationService;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -132,15 +146,20 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_view);
+		setStatus();
 		sceneMap = (LineMapView) findViewById(R.id.sceneMap);
 		currentLineInfoText = (TextView) findViewById(R.id.text);
 		lineMap = (LineMapColorView) findViewById(R.id.lineMap);
-		scaleMorebtn = (Button) findViewById(R.id.button_in);
-		scaleLessbtn = (Button) findViewById(R.id.button_out);
+		scaleMorebtn = (ImageView) findViewById(R.id.button_in);
+		scaleLessbtn = (ImageView) findViewById(R.id.button_out);
+		button_location = (ImageView) findViewById(R.id.button_location);
+
 		screenbtn = (Button) findViewById(R.id.full_screen);
+		start_location_reminder = (Button) findViewById(R.id.start_location_reminder);
 		city_select = (Button) findViewById(R.id.city_select);
 		gif = (GifView) findViewById(R.id.gif);
 		hintText = (TextView) findViewById(R.id.hint);
+		btnLinearLayout = (LinearLayout) findViewById(R.id.mainmap_zoom_area);
 		//middle_line = (View) findViewById(R.id.middle_line);
 		///-----------------
 
@@ -191,6 +210,24 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 				}*/
 			}
 		});
+		start_location_reminder.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				if(mRemonderLocationService == null){
+					start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.stop_location));
+					Intent bindIntent = new Intent(MainViewActivity.this, RemonderLocationService.class);
+					bindService(bindIntent, connection, BIND_AUTO_CREATE);
+				}else{
+					start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.start_location));
+					unbindService(connection);
+					mRemonderLocationService = null;
+				}
+
+
+			}
+		});
 		if(ReadExcelDataUtil.getInstance().hasWrite){
 			initData();
 			gif.setVisibility(View.GONE);
@@ -203,12 +240,25 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 			hintText.setVisibility(View.VISIBLE);
 			setViewVisible(View.GONE);
 		}
+
+
+	}
+
+	private void setStatus(){
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			Window window = getWindow();
+			window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+			//window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+			//window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+			window.setStatusBarColor(this.getResources().getColor(R.color.status_color));
+		}
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		sceneMap.setPauseState(false);
+		sceneMap.postInvalidate();
 	}
 
 	@Override
@@ -236,6 +286,8 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 		lineMap.setVisibility(visible);
 		currentLineInfoText.setVisibility(visible);
 		city_select.setVisibility(visible);
+		button_location.setVisibility(visible);
+		start_location_reminder.setVisibility(visible);
 		//middle_line.setVisibility(visible);
 	}
 
@@ -295,11 +347,13 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
         lineMap.setLayoutParams(linearParams); // 使设置好的布局参数应用到控件
 		float disx = lineMap.getViewWidth()/LineMapColorView.ROWMAXCOUNT;
 		//Log.d("zxc", "disx = "+disx+this.getResources().getColor(lineColor[0]));
+		float dis = this.getResources().getDimension(R.dimen.btn_size)+this.getResources().getDimension(R.dimen.magin_left);
+
 		for(int n=0;n<mLineInfoList.size();n++){
 			MarkObject markObject = new MarkObject();
 			float row = n/(LineMapColor.ROWMAXCOUNT)+1;
 			float cloume = n%(LineMapColor.ROWMAXCOUNT);
-			float x = cloume*disx+disx/2-MarkObject.rectSizewidth/2;
+			float x = cloume*disx-MarkObject.rectSizewidth+dis;
 			float y = row*MarkObject.ROWHEIGHT-MarkObject.ROWHEIGHT/2-MarkObject.rectSizeHeight/2;
 			//Log.d("zxc", "row = "+row+" cloume = "+cloume+" x = "+x+" y = "+y);
 			markObject.setLineid(mLineInfoList.get(n).getLineid());
@@ -333,6 +387,13 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 			});
 			lineMap.addMark(markObject);
 		}
+
+		LinearLayout.LayoutParams linearParams1 =(LinearLayout.LayoutParams) btnLinearLayout.getLayoutParams(); //取控件textView当前的布局参数
+		linearParams1.topMargin= (int)(MarkObject.rectSizeHeight*1.5f);// 控件的高强制设成20
+
+		linearParams1.leftMargin = (int)this.getResources().getDimension(R.dimen.magin_left);// 控件的宽强制设成30
+
+		btnLinearLayout.setLayoutParams(linearParams1); //使设置好的布局参数应用到控件</pre>
 	}
 	
 	private void initLineMap(int lineId){
@@ -370,7 +431,11 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 			markObject.setRadius(MarkObject.size/3);
 			markObject.setCurrentsize(MarkObject.size+MarkObject.DIFF);
 			boolean canTransfer = Integer.parseInt(markObject.mStationInfo.getTransfer()) > 0;
-			markObject.setmBitmap(drawNewBitmap(MarkObject.size/3,MarkObject.size+MarkObject.DIFF,MarkObject.size+MarkObject.DIFF,markObject.getColorId(),canTransfer));
+			if(canTransfer){
+				markObject.setmBitmap(CommonFuction.getbitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.cm_route_map_pin_dottransfer),MarkObject.size+MarkObject.DIFF,MarkObject.size+MarkObject.DIFF));
+			}else{
+				markObject.setmBitmap(drawNewBitmap(MarkObject.size/3,MarkObject.size+MarkObject.DIFF,MarkObject.size+MarkObject.DIFF,markObject.getColorId(),canTransfer));
+			}
 			markObject.setMarkListener(new MarkClickListener() {
 
 				@Override
@@ -378,13 +443,14 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 					// TODO Auto-generated method stub
 					//Toast.makeText(MainViewActivity.this, markObject.getName(), Toast.LENGTH_SHORT).show();
 					//showSettingStationDialog(markObject.mStationInfo);
-					showDialog(markObject.mStationInfo);
+					showDialog(markObject);
 				}
 			});
 			sceneMap.addMark(markObject);
 		}
 
 	}
+
 	/**
 	* 往图片上写入文字、图片等内容
 	*/
@@ -435,35 +501,40 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 		sceneMap.releaseSource();
 		mLineInfoList.clear();
 		mStationInfoList.clear();
+		if(mRemonderLocationService != null){
+			unbindService(connection);
+			mRemonderLocationService = null;
+		}
 	}
 
-	SettingReminderDialog notiDialog;
-	int radioSelect = 0;
-	private void showDialog(StationInfo mStationInfo){
-		List<ExitInfo> existInfoList= mDataHelper.QueryByExitInfoCname(mStationInfo.getCname(),currentCityNo.getCityNo());
+	SettingReminderDialog mSettingReminderDialog;
+	private void showDialog(final MarkObject markObject){
+		List<ExitInfo> existInfoList= mDataHelper.QueryByExitInfoCname(markObject.mStationInfo.getCname(),currentCityNo.getCityNo());
 		String existInfostr = "";
 		if(existInfoList != null){
 			for(int n=0;n<existInfoList.size();n++){
 				existInfostr+=existInfoList.get(n).getExitname()+" "+existInfoList.get(n).getAddr()+"\n";
 			}
 		}
-		 notiDialog = new SettingReminderDialog(this,
+		mSettingReminderDialog = new SettingReminderDialog(this,
 				R.style.Dialog, new NoticeDialogListener() {
 			@Override
 			public void onClick(View view) {
 				try {
 					switch (view.getId()){
-						case R.id.cancel_action:
-							notiDialog.dismiss();
-							break;
-						case R.id.save_action:
-							notiDialog.dismiss();
-							break;
 						case R.id.start:
-							notiDialog.dismiss();
+							mSettingReminderDialog.dismiss();
+							sceneMap.setMardStartState(true,markObject.mStationInfo.getCname());
+							sceneMap.postInvalidate();
 							break;
 						case R.id.end:
-							notiDialog.dismiss();
+							mSettingReminderDialog.dismiss();
+							sceneMap.setMardEndState(true,markObject.mStationInfo.getCname());
+							sceneMap.postInvalidate();
+							if(mRemonderLocationService != null){
+								mRemonderLocationService.setEndStation(markObject.mStationInfo);
+							}
+
 							break;
 					}
 
@@ -471,16 +542,49 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 					e.printStackTrace();
 				}
 			}
-		},mStationInfo.getTransfer(), existInfostr,
-				 ""+mStationInfo.getLineid(), currentCityNo.getCityName(), mStationInfo.getCname());
-		notiDialog.setContentView(R.layout.setting_reminder_dialog);
-		Window window = notiDialog.getWindow();
+		},markObject.mStationInfo.getTransfer(), existInfostr,
+				 ""+markObject.mStationInfo.getLineid(), currentCityNo.getCityName(), markObject.mStationInfo.getCname());
+		mSettingReminderDialog.setContentView(R.layout.setting_reminder_dialog);
+		Window window = mSettingReminderDialog.getWindow();
 		window.setGravity(Gravity.CENTER);
 		// window.setWindowAnimations(R.style.dialog_animation);
 		WindowManager.LayoutParams lp = window.getAttributes();
 		lp.width = WindowManager.LayoutParams.MATCH_PARENT;
 		lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 		window.setAttributes(lp);
-		notiDialog.show();
+		mSettingReminderDialog.show();
 	}
+
+	private ServiceConnection connection=new ServiceConnection() {
+		/**
+		 * 服务解除绑定时候调用
+		 */
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// TODO Auto-generated method stub
+
+		}
+		/**
+		 * 绑定服务的时候调用
+		 */
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// TODO Auto-generated method stub
+			mUpdateBinder = (RemonderLocationService.UpdateBinder) service;
+			mRemonderLocationService = mUpdateBinder.getService();
+			mRemonderLocationService.setCallback(new RemonderLocationService.Callback() {
+
+				@Override
+				public void getNum(StationInfo num) {
+					// TODO Auto-generated method stub
+					Log.d(TAG,"====StationInfo===="+num.getStationInfo());
+				}
+				@Override
+				public void arriaved(boolean state){
+					currentLineInfoText.setText(MainViewActivity.this.getResources().getString(R.string.arrived));
+				}
+			});
+		}
+
+	};
 }

@@ -1,21 +1,23 @@
 package com.traffic.locationremind.baidu.location.activity;
 
-import com.traffic.locationremind.R;
-import com.baidu.location.BDLocation;
-import com.baidu.location.BDLocationListener;
-import com.baidu.location.BDNotifyListener;
-import com.baidu.location.LocationClient;
-
 import android.app.Activity;
 import android.app.Service;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.BDNotifyListener;
+import com.baidu.location.LocationClient;
+import com.traffic.locationremind.R;
+import com.traffic.locationremind.common.util.CommonFuction;
 
 /***
  * 实例演示位置提醒功能，由于定位本身具有空间性，所以设置当前点为提醒点，用户可以通过
@@ -31,6 +33,7 @@ public class NotifyActivity extends Activity {
     private NotiftLocationListener listener;
     private double longtitude, latitude;
     private NotifyLister mNotifyLister;
+    private String TAG = "NotifyActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +84,12 @@ public class NotifyActivity extends Activity {
         public void handleMessage(Message msg) {
             // TODO Auto-generated method stub
             super.handleMessage(msg);
-            mNotifyLister.SetNotifyLocation(latitude, longtitude, 3000, mLocationClient.getLocOption().getCoorType());//4个参数代表要位置提醒的点的坐标，具体含义依次为：纬度，经度，距离范围，坐标系类型(gcj02,gps,bd09,bd09ll)
+            Log.d(TAG,"latitude = "+latitude+" longtitude = "+longtitude);
+            double x = 113.960874,y = 22.57989;
+            double dis = CommonFuction.getDistance(longtitude,latitude,x,y);
+            double dis1 = CommonFuction.getDistanceLat(longtitude,latitude,x,y);
+            Log.d(TAG,"latitude = "+latitude+" longtitude = "+longtitude+" x = "+x+" y = "+y+" dis = "+dis+" dis1 = "+dis1);
+            //mNotifyLister.SetNotifyLocation(latitude, longtitude, 3000, "gps");//4个参数代表要位置提醒的点的坐标，具体含义依次为：纬度，经度，距离范围，坐标系类型(gcj02,gps,bd09,bd09ll)
         }
 
     };

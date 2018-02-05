@@ -58,7 +58,8 @@ public class LineMapColorView extends View {
         this.context = context;
 
         // 获取屏幕的宽和高
-        windowWidth = getResources().getDisplayMetrics().widthPixels;
+        windowWidth = getResources().getDisplayMetrics().widthPixels-context.getResources().getDimension(R.dimen.btn_size)-
+                context.getResources().getDimension(R.dimen.magin_left);
         MarkObject.rectSizewidth = (int)windowWidth/ROWMAXCOUNT/3;
         MarkObject.rectSizeHeight = (int)MarkObject.rectSizewidth/2;
         windowHeight = getResources().getDisplayMetrics().heightPixels;

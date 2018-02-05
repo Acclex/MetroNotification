@@ -2,17 +2,20 @@ package com.traffic.locationremind.baidu.location.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.traffic.locationremind.R;
 import com.traffic.locationremind.baidu.location.object.MarkObject;
+import com.traffic.locationremind.common.util.CommonFuction;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ public class LineMapView extends View {
     private float windowWidth, windowHeight;
 
     private Bitmap mBitmap;
+    private Bitmap mBitmapStart;
+    private Bitmap mBitmapEnd;
     private Paint mPaint;
 
     private PointF mStartPoint, mapCenter;// mapCenter表示地图中心在屏幕上的坐标
@@ -57,6 +62,27 @@ public class LineMapView extends View {
 
     private enum Status {
         NONE, ZOOM, DRAG
+    }
+
+    public void setMardStartState(boolean state,String cname){
+        for(int n=0;n<markList.size();n++){
+            if(markList.get(n).mStationInfo.getCname().equals(cname)){
+                Log.d("zxc1","setMardStartState cname = "+cname);
+                markList.get(n).isStartStation = state;
+            }else{
+                markList.get(n).isStartStation = !state;
+            }
+        }
+    }
+
+    public void setMardEndState(boolean state,String cname){
+        for(int n=0;n<markList.size();n++){
+            if(markList.get(n).mStationInfo.getCname().equals(cname)){
+                markList.get(n).isEndStation = state;
+            }else{
+                markList.get(n).isEndStation = !state;
+            }
+        }
     }
 
     public void setPauseState(boolean isOnpause) {
@@ -99,13 +125,17 @@ public class LineMapView extends View {
         windowWidth = getResources().getDisplayMetrics().widthPixels;
         MarkObject.size = (int)windowWidth/ROWMAXCOUNT/3;
         MarkObject.ROWHEIGHT = (int)MarkObject.size*4;
-        windowHeight = getResources().getDisplayMetrics().heightPixels
-                - getStatusBarHeight();
+        windowHeight = (getResources().getDisplayMetrics().heightPixels
+                - getStatusBarHeight())/2;
         //pointDistance = windowWidth / ROWMAXCOUNT;
         mPaint = new Paint();
 
         mStartPoint = new PointF();
         mapCenter = new PointF();
+        mBitmapStart = CommonFuction.getbitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.cm_main_map_pin_start),
+                MarkObject.size*2,MarkObject.size*2);
+        mBitmapEnd = CommonFuction.getbitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.cm_main_map_pin_end),
+                MarkObject.size*2,MarkObject.size*2);
     }
 
     public float getViewWidth() {
@@ -385,8 +415,20 @@ public class LineMapView extends View {
                         matrix.setScale(1.0f, 1.0f);
                         matrix.postTranslate(object.getX(), object.getY());
                         canvas.drawBitmap(object.getmBitmap(), matrix, mPaint);
+                        matrix.setScale(1.0f, 1.0f);
+                        matrix.postTranslate(object.getX()-object.getmBitmap().getWidth()/2, object.getY()-mBitmapStart.getHeight()/2-object.getmBitmap().getHeight()/3);
+                        if(object.isStartStation){
+                            //Log.d("zxc1","setMardStartState draw mBitmapStart ");
+                            canvas.drawBitmap(mBitmapStart, matrix, mPaint);
+                        }
+                        if(object.isEndStation){
+                            canvas.drawBitmap(mBitmapEnd, matrix, mPaint);
+                        }
+
+
                         int length = (int) (object.getName().length() * 3);
                         canvas.drawText(object.getName(), object.getX() - length, object.getY() + object.getCurrentsize() * 1.8f, mPaint);
+
                     }
 
                 }
@@ -476,19 +518,6 @@ public class LineMapView extends View {
         markList.clear();
     }
 
-/*    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        // TODO Auto-generated method stub
-        if (mBitmap != null) {
-            mBitmap.recycle();
-        }
-        for (MarkObject object : markList) {
-            if (object.getmBitmap() != null) {
-                object.getmBitmap().recycle();
-            }
-        }
-        markList.clear();
-    }*/
 
     // 获得状态栏高度
     private int getStatusBarHeight() {
