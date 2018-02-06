@@ -75,6 +75,7 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 
 	private RemonderLocationService.UpdateBinder mUpdateBinder;
 	private RemonderLocationService mRemonderLocationService;
+	private boolean isOncreate = false;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -215,17 +216,17 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				if(mRemonderLocationService == null){
-					start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.stop_location));
-					Intent bindIntent = new Intent(MainViewActivity.this, RemonderLocationService.class);
-					bindService(bindIntent, connection, BIND_AUTO_CREATE);
-				}else{
-					start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.start_location));
-					unbindService(connection);
-					mRemonderLocationService = null;
+				if(mRemonderLocationService != null){
+					if(CommonFuction.getSharedPreferencesValue(MainViewActivity.this,CommonFuction.ISREMINDER).equals(CommonFuction.TRUE)) {
+						start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.start_location));
+						mRemonderLocationService.setCancleReminder();
+						sceneMap.resetMardEndState();
+					}else{
+						mRemonderLocationService.setStartReminder();
+						mRemonderLocationService.setStationInfoList(sceneMap.getMarkList());
+						start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.stop_location));
+					}
 				}
-
-
 			}
 		});
 		if(ReadExcelDataUtil.getInstance().hasWrite){
@@ -240,8 +241,15 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 			hintText.setVisibility(View.VISIBLE);
 			setViewVisible(View.GONE);
 		}
+		Intent bindIntent = new Intent(MainViewActivity.this, RemonderLocationService.class);
+		bindService(bindIntent, connection, BIND_AUTO_CREATE);
+		isOncreate = true;
 
-
+		if(CommonFuction.getSharedPreferencesValue(MainViewActivity.this,CommonFuction.ISREMINDER).equals(CommonFuction.TRUE)) {
+			start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.start_location));
+		}else{
+			start_location_reminder.setText(MainViewActivity.this.getResources().getString(R.string.stop_location));
+		}
 	}
 
 	private void setStatus(){
@@ -270,12 +278,17 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 	@Override
 	public void onStart() {
 		super.onStart();
-
+		RemonderLocationService.state = true;
 	}
 
 	@Override
 	public void onStop() {
 		super.onStop();
+		RemonderLocationService.state = false;
+		Log.d(TAG,"onStop mRemonderLocationService = "+mRemonderLocationService);
+		if(mRemonderLocationService != null){
+			mRemonderLocationService.setNotification(true);
+		}
 	}
 
 	public void setViewVisible(int visible){
@@ -323,10 +336,22 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 					mLineInfoList.get(n).getStationInfoList().get(i).colorId = mLineInfoList.get(n).colorid;
 				}
 			}
-			//----------------------------------------
-			currentIndex = mLineInfoList.get(0).getLineid();
-			//单一线路-------------------------------------
-			initLineMap(currentIndex);
+
+			if(isOncreate && CommonFuction.getSharedPreferencesValue(MainViewActivity.this,CommonFuction.ISREMINDER).equals(CommonFuction.TRUE)){
+				currentIndex = CommonFuction.convertToInt(CommonFuction.getSharedPreferencesValue(MainViewActivity.this,CommonFuction.CURRENTLINEID),
+						mLineInfoList.get(0).getLineid());
+				//单一线路-------------------------------------
+				initLineMap(currentIndex);
+				sceneMap.setMardStartState(true,CommonFuction.getSharedPreferencesValue(MainViewActivity.this,CommonFuction.STARTSTATIONNAME));
+				sceneMap.setMardEndState(true,CommonFuction.getSharedPreferencesValue(MainViewActivity.this,CommonFuction.ENDSTATIONNAME));
+				sceneMap.setCurrentStation(CommonFuction.getSharedPreferencesValue(MainViewActivity.this,CommonFuction.CURRENTSTATIONNAME));
+			}else{
+				currentIndex = mLineInfoList.get(0).getLineid();
+				//单一线路-------------------------------------
+				initLineMap(currentIndex);
+			}
+			isOncreate = false;
+
 			Message msg = new Message();
 			msg.what = 1;
 			mHandler.sendMessage(msg);
@@ -371,8 +396,7 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 					if(currentIndex != markObject.getLineid() || sceneMap.getFullScree()){
 						currentIndex = markObject.getLineid();
 						currentLineInfoText.setBackgroundColor(markObject.getColorId());
-						//Toast.makeText(MainViewActivity.this, markObject.getName(), Toast.LENGTH_SHORT).show();
-						//initLineMap(markObject.getLineid());
+
 						new Thread() {
 							@Override
 							public void run() {
@@ -407,11 +431,6 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 			}
 		}
 		int countRow = mStationInfoList.size()/LineMapView.ROWMAXCOUNT+extraRow;
-		/*int countRow = mStationInfoList.size()/LineMap.ROWMAXCOUNT+1;
-		Bitmap bitmap = Bitmap.createBitmap((int) sceneMap.getViewWidth(), MarkObject.ROWHEIGHT*countRow,  
-                Bitmap.Config.ARGB_8888);
-		bitmap.eraseColor(this.getResources().getColor(R.color.white));//填充颜色  
-		sceneMap.setBitmap(bitmap);*/
 		float initX = 1f/LineMapView.ROWMAXCOUNT/2f;
 		float initY = 1f/countRow/2;
 		
@@ -494,6 +513,12 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 	}
 
 	@Override
+	public void onBackPressed() {
+
+		super.onBackPressed();
+	}
+
+	@Override
 	public void onDestroy(){
 		super.onDestroy();
 		ReadExcelDataUtil.getInstance().removeDbWriteFinishListener(this);
@@ -534,7 +559,6 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 							if(mRemonderLocationService != null){
 								mRemonderLocationService.setEndStation(markObject.mStationInfo);
 							}
-
 							break;
 					}
 
@@ -572,18 +596,28 @@ public class MainViewActivity extends Activity implements ReadExcelDataUtil.DbWr
 			// TODO Auto-generated method stub
 			mUpdateBinder = (RemonderLocationService.UpdateBinder) service;
 			mRemonderLocationService = mUpdateBinder.getService();
-			mRemonderLocationService.setCallback(new RemonderLocationService.Callback() {
+			if(mRemonderLocationService != null){
+				//mRemonderLocationService.setStationInfoList(sceneMap.getMarkList());
 
-				@Override
-				public void getNum(StationInfo num) {
-					// TODO Auto-generated method stub
-					Log.d(TAG,"====StationInfo===="+num.getStationInfo());
-				}
-				@Override
-				public void arriaved(boolean state){
-					currentLineInfoText.setText(MainViewActivity.this.getResources().getString(R.string.arrived));
-				}
-			});
+				mRemonderLocationService.setCallback(new RemonderLocationService.Callback() {
+
+					@Override
+					public void setCurrentStation(String startCname,String endName,String current) {
+						// TODO Auto-generated method stub
+						//Log.d(TAG,"====StationInfo===="+num.getStationInfo());
+						sceneMap.setCurrentStation(current);
+						sceneMap.setMardStartState(true,startCname);
+						sceneMap.setMardEndState(true,endName);
+
+					}
+					@Override
+					public void arriaved(boolean state){
+						currentLineInfoText.setText(MainViewActivity.this.getResources().getString(R.string.arrived));
+						sceneMap.resetMardEndState();
+					}
+				});
+			}
+
 		}
 
 	};

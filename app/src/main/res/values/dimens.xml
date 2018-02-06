@@ -10,5 +10,7 @@
     <dimen name="text_size">10dp</dimen>
     <dimen name="map_height">150dp</dimen>
     <dimen name="btn_size">35dp</dimen>
-    <dimen name="magin_left">10dp</dimen>
+    <dimen name="notif_size">12dp</dimen>
+    <dimen name="notif_text_pad">5dp</dimen>
+    <dimen name="magin_left">12dp</dimen>
 </resources>

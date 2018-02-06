@@ -52,4 +52,5 @@
     <string name="start_location">开始定位</string>
     <string name="stop_location">停止定位</string>
     <string name="arrived">到达目的地</string>
+    <string name="arrived_reminder">到站提醒</string>
 </resources>

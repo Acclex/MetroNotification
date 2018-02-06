@@ -18,6 +18,14 @@ import android.graphics.Matrix;
 import android.text.TextUtils;
 
 public class CommonFuction {
+	public static final String TRUE = "true";
+	public static final String FALSE = "false";
+	public static final String CURRENTCITYNO = "currentcityno";//城市号
+	public static final String ISREMINDER = "isreminder";//正在后台
+	public static final String CURRENTLINEID = "currentLineId";//线路名
+	public static final String CURRENTSTATIONNAME = "currentstationname";//站名
+	public static final String STARTSTATIONNAME = "startstationname";//起始站
+	public static final String ENDSTATIONNAME = "endstationname";//目标站
 
 	public static final double RANDDIS = 0.5;
 	private static final double EARTH_RADIUS = 6378137.0;
@@ -36,7 +44,7 @@ public class CommonFuction {
 
 	public static String getSharedPreferencesValue(Context context,String key){
 		SharedPreferences sp = context.getSharedPreferences(SHNAME, Context.MODE_PRIVATE);
-		String name = sp.getString(key, null);
+		String name = sp.getString(key, "");
 		return name;
 	}
 

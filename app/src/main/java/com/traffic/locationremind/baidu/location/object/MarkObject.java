@@ -31,6 +31,7 @@ public class MarkObject {
 	public StationInfo mStationInfo;
 	public boolean isStartStation = false;
 	public boolean isEndStation = false;
+	public boolean isCurrentStation = false;
 	
 	public int getLineid() {
 		return lineid;

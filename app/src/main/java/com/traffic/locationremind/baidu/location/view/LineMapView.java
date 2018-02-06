@@ -9,7 +9,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -41,6 +40,7 @@ public class LineMapView extends View {
     private Bitmap mBitmap;
     private Bitmap mBitmapStart;
     private Bitmap mBitmapEnd;
+    private Bitmap mBitmapCurrent;
     private Paint mPaint;
 
     private PointF mStartPoint, mapCenter;// mapCenter表示地图中心在屏幕上的坐标
@@ -67,7 +67,6 @@ public class LineMapView extends View {
     public void setMardStartState(boolean state,String cname){
         for(int n=0;n<markList.size();n++){
             if(markList.get(n).mStationInfo.getCname().equals(cname)){
-                Log.d("zxc1","setMardStartState cname = "+cname);
                 markList.get(n).isStartStation = state;
             }else{
                 markList.get(n).isStartStation = !state;
@@ -83,6 +82,30 @@ public class LineMapView extends View {
                 markList.get(n).isEndStation = !state;
             }
         }
+    }
+
+    public void resetMardEndState(){
+        for(int n=0;n<markList.size();n++){
+            markList.get(n).isEndStation = false;
+            markList.get(n).isEndStation = false;
+            markList.get(n).isCurrentStation = false;
+        }
+        postInvalidate();
+    }
+
+    public void setCurrentStation(String cname){
+        for(int n=0;n<markList.size();n++){
+            if(markList.get(n).mStationInfo.getCname().equals(cname)){
+                markList.get(n).isCurrentStation = true;
+                continue;
+            }
+            markList.get(n).isCurrentStation = false;
+        }
+        postInvalidate();
+    }
+
+    public List<MarkObject> getMarkList(){
+        return markList;
     }
 
     public void setPauseState(boolean isOnpause) {
@@ -135,6 +158,8 @@ public class LineMapView extends View {
         mBitmapStart = CommonFuction.getbitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.cm_main_map_pin_start),
                 MarkObject.size*2,MarkObject.size*2);
         mBitmapEnd = CommonFuction.getbitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.cm_main_map_pin_end),
+                MarkObject.size*2,MarkObject.size*2);
+        mBitmapCurrent = CommonFuction.getbitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.bus_station),
                 MarkObject.size*2,MarkObject.size*2);
     }
 
@@ -418,14 +443,14 @@ public class LineMapView extends View {
                         matrix.setScale(1.0f, 1.0f);
                         matrix.postTranslate(object.getX()-object.getmBitmap().getWidth()/2, object.getY()-mBitmapStart.getHeight()/2-object.getmBitmap().getHeight()/3);
                         if(object.isStartStation){
-                            //Log.d("zxc1","setMardStartState draw mBitmapStart ");
                             canvas.drawBitmap(mBitmapStart, matrix, mPaint);
                         }
                         if(object.isEndStation){
                             canvas.drawBitmap(mBitmapEnd, matrix, mPaint);
                         }
-
-
+                        if(object.isCurrentStation){
+                            canvas.drawBitmap(mBitmapCurrent, matrix, mPaint);
+                        }
                         int length = (int) (object.getName().length() * 3);
                         canvas.drawText(object.getName(), object.getX() - length, object.getY() + object.getCurrentsize() * 1.8f, mPaint);
 
@@ -500,6 +525,15 @@ public class LineMapView extends View {
                 object.getmBitmap().recycle();
             }
         }
+        if (mBitmapCurrent != null) {
+            mBitmapCurrent.recycle();
+        }
+        if (mBitmapEnd != null) {
+            mBitmapEnd.recycle();
+        }
+        if (mBitmapStart != null) {
+            mBitmapStart.recycle();
+        }
         markList.clear();
     }
 
@@ -510,6 +544,7 @@ public class LineMapView extends View {
         if (mBitmap != null) {
             mBitmap.recycle();
         }
+
         for (MarkObject object : markList) {
             if (object.getmBitmap() != null) {
                 object.getmBitmap().recycle();
