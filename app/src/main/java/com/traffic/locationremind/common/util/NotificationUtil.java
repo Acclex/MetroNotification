@@ -12,10 +12,14 @@
 package com.traffic.locationremind.common.util;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
+import android.support.v4.app.NotificationCompat;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.RemoteViews;
@@ -47,22 +51,49 @@ public class NotificationUtil {
 	}
 
 	public void showNotification(int notificationId, NotificationObject mNotificationObject) {
+		//notification();
+
 		// 判断对应id的Notification是否已经显示， 以免同一个Notification出现多次
 		if (!map.containsKey(notificationId)) {
+
+			String name = "my_package_channel";//渠道名字
+			String id = "my_package_channel_1"; // 渠道ID
+			String description = "my_package_first_channel"; // 渠道解释说明
+			PendingIntent pendingIntent;//非紧急意图，可设置可不设置
+			//判断是否是8.0上设备
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				int importance = NotificationManager.IMPORTANCE_HIGH;
+				NotificationChannel mChannel = null;
+				if (mChannel == null) {
+					mChannel = new NotificationChannel(id, name, importance);
+					mChannel.setDescription(description);
+					mChannel.enableLights(true); //是否在桌面icon右上角展示小红点
+					manager.createNotificationChannel(mChannel);
+				}
+			}
+
 			// 创建通知对象
-			Notification notification = new Notification();
+			//Notification notification = new Notification();
+			NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext);
 			// 设置通知栏滚动显示文字
-			notification.tickerText = mContext.getResources().getString(R.string.arrived_reminder);
+			//notification.tickerText = mContext.getResources().getString(R.string.arrived_reminder);
+			notification.setTicker(mContext.getResources().getString(R.string.arrived_reminder));;
 			// 设置显示时间
-			notification.when = System.currentTimeMillis();
+			//notification.when = System.currentTimeMillis();
+			notification.setWhen(System.currentTimeMillis());
+			notification.setChannelId(id);
 			// 设置通知显示的图标
-			notification.icon = R.drawable.cm_mainmap_notice_green;
+			//notification.icon = R.drawable.cm_mainmap_notice_green;
+			notification.setSmallIcon(R.mipmap.notification_icon);
+			notification.setColor(Color.parseColor("#880000FF"));
 			// 设置通知的特性: 通知被点击后，自动消失
-			notification.flags = Notification.FLAG_AUTO_CANCEL;
+			notification.setAutoCancel(true);
+			//notification.flags = Notification.FLAG_AUTO_CANCEL;
 			// 设置点击通知栏操作
 			Intent in = new Intent(mContext, MainViewActivity.class);// 点击跳转到指定页面
 			PendingIntent pIntent = PendingIntent.getActivity(mContext, 0, in, 0);
-			notification.contentIntent = pIntent;
+			notification.setContentIntent(pIntent);
+			//notification.contentIntent = pIntent;
 			// 设置通知的显示视图
 			RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.reminder_notify);
 
@@ -83,16 +114,20 @@ public class NotificationUtil {
 			// 设置暂停按钮的点击事件
 			Intent close = new Intent(mContext,RemonderLocationService.class);// 设置跳转到对应界面
 			close.setAction(RemonderLocationService.CLOSE_REMINDER_SERVICE);
-			PendingIntent pauseIn = PendingIntent.getService(mContext, 0, in,
-					0);
+			PendingIntent pauseIn = PendingIntent.getService(mContext, 0, in, 0);
 			// 这里可以通过Bundle等传递参数
 			remoteViews.setOnClickPendingIntent(R.id.close, pauseIn);
 			/********** 简单分隔 **************************/
 			// 设置通知的显示视图
-			notification.contentView = remoteViews;
+			notification.setCustomBigContentView(remoteViews);
+			//notification.contentView = remoteViews;
 			// 发出通知
-			manager.notify(notificationId, notification);
-			map.put(notificationId, notification);// 存入Map中
+			Notification notifi = notification.build();
+
+			manager.notify(notificationId,notifi);
+
+			//manager.notify(notificationId, notification);
+			map.put(notificationId, notifi);// 存入Map中
 		}
 	}
 

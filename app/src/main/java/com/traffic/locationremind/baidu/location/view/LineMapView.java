@@ -89,6 +89,7 @@ public class LineMapView extends View {
             markList.get(n).isEndStation = false;
             markList.get(n).isEndStation = false;
             markList.get(n).isCurrentStation = false;
+            markList.get(n).isStartStation = false;
         }
         postInvalidate();
     }
@@ -472,7 +473,12 @@ public class LineMapView extends View {
                 if (event.getPointerCount() == 1) {
                     // 如果两次点击时间间隔小于一定值，则默认为双击事件
                     if (event.getEventTime() - lastClickTime < DOUBLE_CLICK_TIME_SPACE) {
-                        zoomIn();
+                        if (mCurrentScale < mCurrentScaleMax) {
+                            zoomIn();
+                        }else{
+                            zoomOut();
+                        }
+                        return true;
                     } else {
                         mStartPoint.set(event.getX(), event.getY());
                         mStatus = Status.DRAG;

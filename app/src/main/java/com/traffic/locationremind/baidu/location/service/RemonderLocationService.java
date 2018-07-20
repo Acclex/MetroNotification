@@ -36,18 +36,16 @@ public class RemonderLocationService extends Service {
     /**
      * Timer实时更新数据的
      */
-    private Timer mTimer=new Timer();
     private double longitude,latitude;
     /**
      *
      */
-    private int num;
-    private StationInfo mStationInfo;
+    //private StationInfo currentStationInfo = new StationInfo();
+    BDLocation currentLocation;
     private List<MarkObject> mStationInfoList = null;//地图站台信息
 
     private NotificationUtil mNotificationUtil;
     private boolean isReminder = false;
-
     @Override
     public IBinder onBind(Intent intent) {
         // TODO Auto-generated method stub
@@ -59,9 +57,19 @@ public class RemonderLocationService extends Service {
     @Override
     public boolean onUnbind(Intent intent) {
         this.callback = null;
-
-
         return super.onUnbind(intent);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if(intent != null){
+            Log.d(TAG,"onStartCommand intent.getAction() = "+intent.getAction());
+            if(intent.getAction() != null && intent.getAction().equals(CLOSE_REMINDER_SERVICE)){
+                setCancleReminder();
+                stopSelf();
+            }
+        }
+        return super.onStartCommand(intent, flags, startId);
     }
 
     /**
@@ -93,9 +101,14 @@ public class RemonderLocationService extends Service {
          * 执行Timer 2000毫秒后执行，5000毫秒执行一次
          */
         mNotificationUtil = new NotificationUtil(this);
-
+        if(locationService != null){
+            locationService.start();
+        }
     }
 
+    public BDLocation getCurrentLocation(){
+        return  currentLocation;
+    }
     /*****
      *
      * 定位结果回调，重写onReceiveLocation方法，可以直接拷贝如下代码到自己工程中修改
@@ -106,28 +119,24 @@ public class RemonderLocationService extends Service {
         @Override
         public void onReceiveLocation(BDLocation location) {
             // TODO Auto-generated method stub
-            StationInfo mStationInfo = new StationInfo();
+
             double lot =0,lat = 0;
             if (null != location
                     && location.getLocType() != BDLocation.TypeServerError) {
                 StringBuffer sb = new StringBuffer(256);
-                //sb.append("time : ");
                 /**
                  * 时间也可以使用systemClock.elapsedRealtime()方法 获取的是自从开机以来，每次回调的时间；
                  * location.getTime() 是指服务端出本次结果的时间，如果位置不发生变化，则时间不变
                  */
-                //sb.append(location.getTime());
-                //sb.append("\nlocType : ");// 定位类型
-                //sb.append(location.getLocType());
-                //sb.append("\nlocType description : ");// *****对应的定位类型说明*****
-                //sb.append(location.getLocTypeDescription());
                 //sb.append("\nlatitude : ");// 纬度
                 lot = location.getLatitude();
-                mStationInfo.setLat(""+location.getLatitude());
+                currentLocation = location;
+                //currentStationInfo.setLat(""+location.getLatitude());
                 //sb.append(location.getLatitude());
                 //sb.append("\nlontitude : ");// 经度
                 lat = location.getLongitude();
-                mStationInfo.setLot(""+location.getLongitude());
+                Log.d(TAG,"BDAbstractLocationListener lot ="+lot+" lat = "+lat);
+                //currentStationInfo.setLot(""+location.getLongitude());
                 //sb.append(location.getLongitude());
                 //sb.append("\nradius : ");// 半径
                 //sb.append(location.getRadius());
@@ -138,73 +147,19 @@ public class RemonderLocationService extends Service {
                 //sb.append("\ncitycode : ");// 城市编码
                 //sb.append(location.getCityCode());
                 //sb.append("\ncity : ");// 城市
-                mStationInfo.setCityNo(""+location.getCityCode());
-                mStationInfo.setCname(location.getCity());
-                //sb.append(location.getCity());
-                //sb.append("\nDistrict : ");// 区
-                //sb.append(location.getDistrict());
-                //sb.append("\nStreet : ");// 街道
-                //sb.append(location.getStreet());
-                //sb.append("\naddr : ");// 地址信息
-                //sb.append(location.getAddrStr());
-                //sb.append("\nUserIndoorState: ");// *****返回用户室内外判断结果*****
-                //sb.append(location.getUserIndoorState());
-                //sb.append("\nDirection(not all devices have value): ");
-                //sb.append(location.getDirection());// 方向
-               // sb.append("\nlocationdescribe: ");
-                //sb.append(location.getLocationDescribe());// 位置语义化信息
-                //sb.append("\nPoi: ");// POI信息
-//                if (location.getPoiList() != null
-//                        && !location.getPoiList().isEmpty()) {
-//                    for (int i = 0; i < location.getPoiList().size(); i++) {
-//                        Poi poi = (Poi) location.getPoiList().get(i);
-//                        sb.append(poi.getName() + ";");
-//                    }
-//                }
-//                if (location.getLocType() == BDLocation.TypeGpsLocation) {// GPS定位结果
-//                    sb.append("\nspeed : ");
-//                    sb.append(location.getSpeed());// 速度 单位：km/h
-//                    sb.append("\nsatellite : ");
-//                    sb.append(location.getSatelliteNumber());// 卫星数目
-//                    sb.append("\nheight : ");
-//                    sb.append(location.getAltitude());// 海拔高度 单位：米
-//                    sb.append("\ngps status : ");
-//                    sb.append(location.getGpsAccuracyStatus());// *****gps质量判断*****
-//                    sb.append("\ndescribe : ");
-//                    sb.append("gps定位成功");
-//                } else if (location.getLocType() == BDLocation.TypeNetWorkLocation) {// 网络定位结果
-//                    // 运营商信息
-//                    if (location.hasAltitude()) {// *****如果有海拔高度*****
-//                        sb.append("\nheight : ");
-//                        sb.append(location.getAltitude());// 单位：米
-//                    }
-//                    sb.append("\noperationers : ");// 运营商信息
-//                    sb.append(location.getOperators());
-//                    sb.append("\ndescribe : ");
-//                    sb.append("网络定位成功");
-//                } else if (location.getLocType() == BDLocation.TypeOffLineLocation) {// 离线定位结果
-//                    sb.append("\ndescribe : ");
-//                    sb.append("离线定位成功，离线定位结果也是有效的");
-//                } else if (location.getLocType() == BDLocation.TypeServerError) {
-//                    sb.append("\ndescribe : ");
-//                    sb.append("服务端网络定位失败，可以反馈IMEI号和大体定位时间到loc-bugs@baidu.com，会有人追查原因");
-//                } else if (location.getLocType() == BDLocation.TypeNetWorkException) {
-//                    sb.append("\ndescribe : ");
-//                    sb.append("网络不同导致定位失败，请检查网络是否通畅");
-//                } else if (location.getLocType() == BDLocation.TypeCriteriaException) {
-//                    sb.append("\ndescribe : ");
-//                    sb.append("无法获取有效定位依据导致定位失败，一般是由于手机的原因，处于飞行模式下一般会造成这种结果，可以试着重启手机");
-//                }
-                //logMsg(sb.toString());
+                //currentStationInfo.setCityNo(""+location.getCityCode());
+                //currentStationInfo.setCname(location.getCity());
+
                 /*
                  * 得到最新数据
                  */
                 //mStationInfo.setStationInfo(sb.toString());
                 //callback.setCurrentStation(mStationInfo);//
-                if(mStationInfoList != null){
+                if(mStationInfoList != null && isReminder){
                     double dis = 0;
                     String startStation="",endStation="",currentStation="";
-                    for(int n = 0;n<mStationInfoList.size();n++){
+                    final int mStationInfoList_size = mStationInfoList.size();// Moved  mStationInfoList.size() call out of the loop to local variable mStationInfoList_size
+                    for(int n = 0; n< mStationInfoList_size; n++){
                         longitude = CommonFuction.convertToDouble(mStationInfoList.get(n).mStationInfo.getLot(),0);
                         latitude =  CommonFuction.convertToDouble(mStationInfoList.get(n).mStationInfo.getLat(),0);
                         dis = CommonFuction.getDistanceLat(longitude,latitude,lot,lat);
@@ -219,7 +174,8 @@ public class RemonderLocationService extends Service {
                         }
                         callback.setCurrentStation(startStation,endStation,currentStation);
                         if(dis<= CommonFuction.RANDDIS){//抵达某站台
-                            for(int j = 0;j<mStationInfoList.size();j++){
+                            final int mStationInfoList_size1 = mStationInfoList.size();// Moved  mStationInfoList.size() call out of the loop to local variable mStationInfoList_size
+                            for(int j = 0; j< mStationInfoList_size1; j++){
                                 mStationInfoList.get(j).isCurrentStation = false;
                             }
                             mStationInfoList.get(n).isCurrentStation = true;
@@ -227,13 +183,9 @@ public class RemonderLocationService extends Service {
                             callback.setCurrentStation(startStation,endStation,currentStation);
                             CommonFuction.writeSharedPreferences(RemonderLocationService.this,CommonFuction.CURRENTSTATIONNAME,mStationInfoList.get(n).mStationInfo.getCname());
                             if(mStationInfoList.get(n).isEndStation){//到站通知
-                                if(mTimer != null){
-                                    mTimer.cancel();
-                                    isReminder = false;
-                                    CommonFuction.writeSharedPreferences(RemonderLocationService.this,CommonFuction.ISREMINDER,CommonFuction.FALSE);
-                                    if(callback != null){
-                                        callback.arriaved(true);
-                                    }
+                                if(callback != null){
+                                    callback.arriaved(true);
+                                    setCancleReminder();
                                 }
                                 break;
                             }
@@ -252,27 +204,19 @@ public class RemonderLocationService extends Service {
      */
 
     public void setStartReminder(){
-        if(!isReminder) {
-            isReminder = true;
-            mTimer.schedule(task, 0, 3000);
-        }
+        isReminder = true;
+        CommonFuction.writeSharedPreferences(this,CommonFuction.ISREMINDER,CommonFuction.TRUE);
     }
     public void setCallback(Callback callback) {
         this.callback = callback;
     }
 
     public void setCancleReminder(){
-        if(mTimer != null){
-            mTimer.cancel();
-        }
+        isReminder = false;
         CommonFuction.writeSharedPreferences(this,CommonFuction.ISREMINDER,CommonFuction.FALSE);
+        mNotificationUtil.cancel(NotificationUtil.notificationId);
     }
 
-    /*(String lineName,
-    String startStation,
-    String endStation,
-    String nextStation,
-    String time)*/
     public void setNotification(boolean state) {
         mNotificationUtil = new NotificationUtil(this);
         boolean ismark = CommonFuction.getSharedPreferencesValue(this,CommonFuction.ISREMINDER).equals(CommonFuction.TRUE);
@@ -284,30 +228,9 @@ public class RemonderLocationService extends Service {
     }
 
     public void setEndStation(StationInfo mStationInfo){
-        this.mStationInfo = mStationInfo;
         longitude = CommonFuction.convertToDouble(mStationInfo.getLot(),0);
         latitude = CommonFuction.convertToDouble(mStationInfo.getLat(),0);
-
     }
-
-    /**
-     *
-     */
-    TimerTask task = new TimerTask(){
-
-        @Override
-        public void run() {
-            // TODO Auto-generated method stub
-            num++;
-            if(callback!=null){
-
-                locationService.start();
-            }
-
-        }
-
-    };
-
 
     /**
      * 回调接口
@@ -321,7 +244,7 @@ public class RemonderLocationService extends Service {
          *
          * @return
          */
-        void setCurrentStation(String startCname,String endName,String current);
+        void setCurrentStation(String startCname, String endName, String current);
         void arriaved(boolean state);
     }
     /**
@@ -329,30 +252,27 @@ public class RemonderLocationService extends Service {
      */
     @Override
     public void onDestroy() {
+        super.onDestroy();
         // TODO Auto-generated method stub
         System.out.println("=========onDestroy======");
         /**
          * 停止Timer
          */
-        if(mTimer != null){
-            mTimer.cancel();
-        }
         if(locationService != null){
             locationService.unregisterListener(mListener); // 注销掉监听
             locationService.stop(); // 停止定位服务
         }
-
-        super.onDestroy();
+        Log.d(TAG,"onDestroy ");
     }
 
     public void setStationInfoList(List<MarkObject> mStationInfoList){
         this.mStationInfoList = mStationInfoList;
         if(mStationInfoList != null && mStationInfoList.size() > 0){
-            CommonFuction.writeSharedPreferences(this,CommonFuction.ISREMINDER,CommonFuction.TRUE);
             CommonFuction.writeSharedPreferences(this,CommonFuction.CURRENTLINEID,""+mStationInfoList.get(0).mStationInfo.getLineid());
             CommonFuction.writeSharedPreferences(this,CommonFuction.CURRENTCITYNO,""+mStationInfoList.get(0).mStationInfo.getCityNo());
 
-            for(int n=0;n<mStationInfoList.size();n++){
+            final int mStationInfoList_size = mStationInfoList.size();// Moved  mStationInfoList.size() call out of the loop to local variable mStationInfoList_size
+            for(int n = 0; n< mStationInfoList_size; n++){
                 if(mStationInfoList.get(n).isStartStation){
                     CommonFuction.writeSharedPreferences(this,CommonFuction.STARTSTATIONNAME,mStationInfoList.get(n).mStationInfo.getCname());
                     continue;

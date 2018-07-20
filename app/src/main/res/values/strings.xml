@@ -53,4 +53,5 @@
     <string name="stop_location">停止定位</string>
     <string name="arrived">到达目的地</string>
     <string name="arrived_reminder">到站提醒</string>
+    <string name="please_set_target">请设置目标站点</string>
 </resources>
